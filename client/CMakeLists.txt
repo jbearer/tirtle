@@ -38,6 +38,7 @@ set(OpenCV_ARUCO_INCLUDE "${OpenCV_CONTRIB_ROOT_DIR}/aruco/include")
 
 # tirtle headers
 include_directories(include)
+include_directories(../common/include)
 
 file(GLOB_RECURSE CLIENT_SRC src/*.cpp)
 add_library(tirtle-client SHARED ${CLIENT_SRC})

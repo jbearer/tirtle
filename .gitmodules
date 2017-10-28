@@ -1,0 +1,3 @@
+[submodule "server/avr-arduino-cmake"]
+	path = server/avr-arduino-cmake
+	url = https://github.com/ubirch/avr-arduino-cmake.git

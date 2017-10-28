@@ -1,6 +1,6 @@
 #pragma once
 
-#include "path.h"
+#include "tirtle/path.h"
 
 #ifdef __cplusplus
 extern "C" {

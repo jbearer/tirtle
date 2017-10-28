@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "motor_control.h"
-#include "path.h"
+#include "tirtle/motor_control.h"
+#include "tirtle/path.h"
 
 static path_t *paths;
 static length_t number_of_paths;

@@ -1,9 +1,9 @@
 #include <SoftwareSerial.h>
 
-#include "motor_control.h"
-#include "path.h"
-#include "rpc.h"
-#include "rpc_parser.h"
+#include "tirtle/motor_control.h"
+#include "tirtle/path.h"
+#include "tirtle/rpc.h"
+#include "tirtle/rpc_parser.h"
 
 #define MAX_PATHS 100
 #define MAX_POINTS 100
