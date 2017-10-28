@@ -1,14 +1,111 @@
 #include "path.h"
+#include <Arduino.h>
+#include <stdint.h>
+
 #include "motor_control.h"
 
 static path_t *paths;
+static length_t number_of_paths;
 
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@   MOTOR SETTINGS    @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+const uint8_t SPEED = 50; /* Speed 0-255 (pwm value) */
+const uint8_t TURN_SPEED = 10; /*Slow speed*/
+
+/* list the possible states that tirtle can be in */
+enum state {
+  START,
+  MOVE_FWD,
+  TURN,
+  STOP
+};
+
+/* Initialize State*/
+enum state STATE = START;
+
+/*-------------------------------------------------------------------------------
+ *                               ARDUINO PINS
+ --------------------------------------------------------------------------------*/
+const int enR = 10;
+const int dirR1 = 9;
+const int dirR2 = 8;
+const int dirL1 = 7;
+const int dirL2 = 6;
+const int enL = 5;
+
+const int L = 0;
+const int R = 1;
+const int FWD = 1;
+const int BACK = 0;
+
+
+/* Motor: 0 = Left, 1 = Right */
+void setDir(bool motor, bool dir){
+  /* Choose pins based on motor */
+  int dir1, dir2;
+  if(motor){ 
+    dir1 = dirL1;
+    dir2 = dirL2;
+  }
+  else{
+    dir1 = dirR1;
+    dir2 = dirR2;
+  }
+  /* Digital write direction pins */
+  if(dir){ // FWD
+    digitalWrite(dir1, HIGH);
+    digitalWrite(dir2, LOW);
+  }
+  else{
+    digitalWrite(dir1, LOW);
+    digitalWrite(dir2, HIGH);
+  }
+}
+
+/*-------------------------------------------------------------------------------
+ *                                MOTOR CONTROLS
+ --------------------------------------------------------------------------------*/
+   
+void moveFwd(){
+  /* Set PWM values, (same speed) */
+  analogWrite(enL, SPEED);
+  analogWrite(enR, SPEED);
+  setDir(L, FWD);
+  setDir(R, FWD);
+}
+
+/* Dir: 0 = CCW, 1 = CW */
+void turn(bool dir){
+  /* Slowly rotate */
+  analogWrite(enL, TURN_SPEED);
+  analogWrite(enR, TURN_SPEED);
+  if(dir){ /* Clockwise */
+    setDir(L, FWD);
+    setDir(R, BACK);
+  }
+  else{ /* Counterclockwise */
+    setDir(L, BACK);
+    setDir(R, FWD);
+  }
+}
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@   LOAD IMAGE    @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+ 
 /* load image paths and store them for use */
-void load_image(const path_t *path_, length_t num_paths)
+void load_image(path_t *path_, length_t num_paths)
 {
   paths = path_;
+  number_of_paths = num_paths;
   
 }
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@   VARIABLES IN SET POS   @@@@@@@@@@@@@@@@@@@@@@@@
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 
 /* current_path_num to keep track of the path that the tirtle is on*/
 int current_path_num = 0;
@@ -19,8 +116,11 @@ int current_segment_num = 0;
 /* allowable error margin between tirtle position and position of point along path*/
 coord_t error_margin = 1; 
 
-/* allowable percent deviation between tirtle slope and desired path slope */
-float allowable_percent_err = 1;
+/* (%) allowable percent deviation between tirtle slope and desired path slope */
+coord_t allowable_percent_err = 1;
+
+/* define the turning direction */
+bool turn_direction = 0;
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
  * @@@@@@@@@@@@@@@@@@@@@   ABSOLUTE VALUE    @@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -36,7 +136,6 @@ float allowable_percent_err = 1;
   }
  }
 
-
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
  * @@@@@@@@@@@@@@@@@@@@@@@@@    DELTA_D    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
@@ -45,7 +144,6 @@ coord_t delta_d(coord_t del_x, coord_t del_y){
 
   /* distance between the previous point and goal point*/
   return sqrt((del_y)^2 + ((del_x)^2));
-
 }
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -60,7 +158,7 @@ void set_position(point_t location_, angle_t angle_){
   coord_t x0;
   coord_t y0;
 
-  /* Define the very first point in the turtle's path*/
+  /* Define the very first point in the tirtle's path*/
   if (current_segment_num == 0){
     x0 = current_point.x;
     y0 = current_point.y;
@@ -84,7 +182,7 @@ void set_position(point_t location_, angle_t angle_){
   coord_t del_x = absolute(x2,x1);
   coord_t del_y = absolute(y2,y1);
 
-  coord_t del_dist = del_d(del_x, del_y); /* calculate distance between current and goal point*/
+  coord_t del_dist = delta_d(del_x, del_y); /* calculate distance between current and goal point*/
 
   /*if the distance between the current point andthe goal point is within the margin of error*/
   if (del_dist <= error_margin){
@@ -106,16 +204,17 @@ void set_position(point_t location_, angle_t angle_){
       del_x = absolute(x2,x1);
       del_y = absolute(y2,y1);
   
-      del_dist = del_d(del_x, del_y); /* calculate distance between current and new goal point*/
+      del_dist = delta_d(del_x, del_y); /* calculate distance between current and new goal point*/
     }
     else{
       /* send some sort of signal to indicate that it has finished a path */
+      STATE = STOP;
     }
       
-    }
+  }
   
   /*------------------------------------------------------------------------
-   * DETERMINE ANGLE AND DISTANCE BETWEEN ROBOT AND NEXT POINT ON PATH
+   * DETERMINE ANGLE AND DISTANCE BETWEEN TIRTLE AND NEXT POINT ON PATH
    ------------------------------------------------------------------------*/
    
   angle_t current_angle = angle_; /* the current orientation angle of tirtle*/
@@ -157,23 +256,70 @@ void set_position(point_t location_, angle_t angle_){
    *    DETERMINE WHETHER TIRTLE NEEDS TO REORIENT ITSELF [IT'S OFF COURSE]
    ------------------------------------------------------------------------*/
 
-   coord_t current_slope = del_y/del_x; /* current slope that tirtle is traveling at*/
-   coord_t desired_slope = absolute(y2,y0)/absolute(x2,x0); /* desired slope between previous point and next point on path*/
+//   coord_t current_slope = absolute(x1,x0)/absolute(y1,y0); /* current slope that tirtle is traveling at*/
+//   coord_t desired_slope = absolute(y2,y0)/absolute(x2,x0); /* desired slope between previous point and next point on path*/
+//
+//   /* calculate percent error in slope */
+//   coord_t percent_err = absolute(current_slope,desired_slope)/desired_slope;
 
-   /* calculate percent error in slope */
-   coord_t percent_err = absolute(current_slope,desired_slope)/desired_slope;
+      /* calculate percent error in slope */
+      coord_t percent_err = absolute(current_angle,goal_angle)/goal_angle;
 
    /* determine whether tirtle is on or off course */
    if (percent_err*100 <= allowable_percent_err){
-    /* continue doing whatever it needs to be doing */
+    /* continue moving the tirtle in the same direction */
+    STATE = MOVE_FWD;
    }
    else{
-    /*ROTATE THE TIRTLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+    /*rotate the tirtle towards the correct orientation*/
+    bool turn_direction;
+
+    if (current_angle > goal_angle && current_angle-goal_angle > 180 || goal_angle > current_angle && goal_angle-current_angle < 180){
+      turn_direction = 0;
+    }
+    else{
+      turn_direction = 1;
+    }
+
+    STATE = TURN;
    }
 
-   
+  
+}
 
 
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@   ARDUINO SETUP    @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+void setup(){
+  /* Set pins and stuff */
+  pinMode(enR, OUTPUT);
+  pinMode(enL, OUTPUT);
+  pinMode(dirL1, OUTPUT);
+  pinMode(dirL2, OUTPUT);
+  pinMode(dirR1, OUTPUT);
+  pinMode(dirR2, OUTPUT);
+  digitalWrite(enR, LOW);
+  digitalWrite(enL, LOW);
+}
+
+void loop(){
+  /* Main function */
+
+  switch(STATE){
+    case(MOVE_FWD):
+      moveFwd();
+      break;
+    case(TURN):
+      turn(turn_direction);
+      break;
+    case(STOP):
+      delay(1);
+      break;
+    default:
+      break;
+  }
   
 }
 
