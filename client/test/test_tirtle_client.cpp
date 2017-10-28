@@ -10,7 +10,7 @@ int main(int argc, char **argv)
         std::cerr << "usage: " << argv[0] << " <device>" << '\n';
         return 1;
     }
-    tirtle::tirtle_client client(argv[1]);
+    auto client = tirtle::connect_tirtle(argv[1]);
 
     std::vector<point_t> path1;
     path1.push_back(make_point(1, 1));
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     std::vector<path_t> paths;
     paths.push_back(make_path(path1));
     paths.push_back(make_path(path2));
-    client.load_image(std::move(paths));
+    client->load_image(std::move(paths));
 
-    client.set_position(make_point(2, 3), 45);
+    client->set_position(make_point(2, 3), 45);
 }

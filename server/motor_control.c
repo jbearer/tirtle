@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 #include "path.h"
 #include <Arduino.h>
 #include <stdint.h>
 
 #include "motor_control.h"
+=======
+#include <Arduino.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "motor_control.h"
+#include "path.h"
+>>>>>>> 5bad83f39634c8a5b6a28905b74f380b03542ffb
 
 static path_t *paths;
 static length_t number_of_paths;

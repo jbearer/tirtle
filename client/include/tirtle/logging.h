@@ -1,8 +1,10 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 #include <errno.h>
+#include <string.h>
 
 namespace tirtle {
     namespace log {

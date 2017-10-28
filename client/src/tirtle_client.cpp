@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -133,72 +134,55 @@ void bt_send<path_t>(int socket, path_t path)
     }
 }
 
-namespace tirtle {
-
-    struct tirtle_client_impl
+struct tirtle_client_impl
+    : tirtle::tirtle_client
+{
+    tirtle_client_impl(const std::string & dev)
+        : image_loaded(false)
     {
-        tirtle_client_impl(const std::string & dev)
-            : image_loaded(false)
-        {
-            bdaddr_t dest;
-            if (!bt_address(dest, dev)) {
-                tirtle::log::fatal("unable to find bluetooth device with name \"", dev, "\"");
-            }
-            socket = bt_socket(dest);
+        bdaddr_t dest;
+        if (!bt_address(dest, dev)) {
+            tirtle::log::fatal("unable to find bluetooth device with name \"", dev, "\"");
         }
-
-        void load_image(const std::vector<path_t> & paths)
-        {
-            if (image_loaded) {
-                tirtle::log::fatal("duplicate image load");
-            }
-
-            tirtle::log::info("loading image with ", paths.size(), " paths");
-
-            bt_send(socket, LOAD_IMAGE);
-            bt_send(socket, (length_t)paths.size());
-            for (const auto & path : paths) {
-                bt_send(socket, path);
-            }
-        }
-
-        void set_position(point_t loc, angle_t angle)
-        {
-            tirtle::log::debug("setting position(loc=", loc, ",angle=", angle);
-            bt_send(socket, SET_POSITION);
-            bt_send(socket, loc);
-            bt_send(socket, angle);
-        }
-
-        ~tirtle_client_impl()
-        {
-            if (close(socket) == -1) {
-                tirtle::log::perror("error closing socket ", socket);
-            }
-        }
-
-    private:
-        bool    image_loaded;
-        int     socket;
-    };
-
-    tirtle_client::tirtle_client(const std::string & dev)
-        : impl(new tirtle_client_impl(dev))
-    {}
-
-    tirtle_client::~tirtle_client()
-    {
-        delete impl;
+        socket = bt_socket(dest);
     }
 
-    void tirtle_client::load_image(const std::vector<path_t> & paths)
+    void load_image(const std::vector<path_t> & paths) override
     {
-        impl->load_image(paths);
+        if (image_loaded) {
+            tirtle::log::fatal("duplicate image load");
+        }
+
+        tirtle::log::info("loading image with ", paths.size(), " paths");
+
+        bt_send(socket, LOAD_IMAGE);
+        bt_send(socket, (length_t)paths.size());
+        for (const auto & path : paths) {
+            bt_send(socket, path);
+        }
     }
 
-    void tirtle_client::set_position(point_t loc, angle_t angle)
+    void set_position(point_t loc, angle_t angle) override
     {
-        impl->set_position(loc, angle);
+        tirtle::log::debug("setting position(loc=", loc, ",angle=", angle);
+        bt_send(socket, SET_POSITION);
+        bt_send(socket, loc);
+        bt_send(socket, angle);
     }
 
+    ~tirtle_client_impl()
+    {
+        if (close(socket) == -1) {
+            tirtle::log::perror("error closing socket ", socket);
+        }
+    }
+
+private:
+    bool    image_loaded;
+    int     socket;
+};
+
+std::unique_ptr<tirtle::tirtle_client> tirtle::connect_tirtle(const std::string & dev)
+{
+    return std::make_unique<tirtle_client_impl>(dev);
 }
