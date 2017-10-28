@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.0)
+set(CMAKE_CXX_STANDARD 11)
+project( Tirtle )
+find_package( OpenCV REQUIRED )
+add_executable( Tirtle ObjectTrack/object_track.cpp )
+set(OpenCV_LIB_PATH /usr/local/lib/ )
+target_link_libraries( Tirtle ${OpenCV_LIBS} ${OpenCV_LIB_PATH}libopencv_aruco.so.3.1.0)
