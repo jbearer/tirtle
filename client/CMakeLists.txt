@@ -28,3 +28,6 @@ target_link_libraries(tirtle-client bluetooth)
 
 add_executable(test-client test/test_tirtle_client.cpp)
 target_link_libraries(test-client tirtle-client)
+
+add_executable(test-tirtle test/test_tirtle.cpp)
+target_link_libraries(test-tirtle tirtle-client)
