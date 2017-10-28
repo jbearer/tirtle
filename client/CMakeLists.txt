@@ -19,20 +19,30 @@ else()
     set(LOG_LEVEL debug)
 endif()
 
-find_package(OpenCV COMPONENTS core imgproc imgcodecs highgui REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS)
 
-file(GLOB OPENCV_MODULE_HEADERS /home/pi/opencv-3.3.1/modules/*/include)
+# OpenCV aruco module
+set(OpenCV_CONTRIB_POSSIBLE_ROOT_DIRS
+    "${OPENCV_EXTRA_MODULES_PATH}")
+find_path(OpenCV_CONTRIB_ROOT_DIR
+    NAMES
+    aruco/include/opencv2/aruco.hpp
+    PATHS ${OpenCV_CONTRIB_POSSIBLE_ROOT_DIRS})
+if (NOT OpenCV_CONTRIB_ROOT_DIR)
+    message(FATAL_ERROR "Unable to find opencv contrib modules.")
+endif()
 
-set(OpenCV_LIB_PATH /usr/local/lib/ )
+set(OpenCV_ARUCO_INCLUDE "${OpenCV_CONTRIB_ROOT_DIR}/aruco/include")
 
 # tirtle headers
 include_directories(include)
 
 file(GLOB_RECURSE CLIENT_SRC src/*.cpp)
 add_library(tirtle-client SHARED ${CLIENT_SRC})
-target_include_directories(tirtle-client PRIVATE ${OPENCV_MODULE_HEADERS})
+target_include_directories(tirtle-client PRIVATE ${OpenCV_INCLUDE_DIRS})
+target_include_directories(tirtle-client PRIVATE ${OpenCV_ARUCO_INCLUDE})
 target_link_libraries(tirtle-client bluetooth)
-target_link_libraries(tirtle-client ${OpenCV_LIB_PATH}libopencv_aruco.so.3.1.0 opencv_core opencv_imgproc opencv_objdetect opencv_highgui opencv_shape opencv_stitching opencv_superres opencv_videostab opencv_calib3d opencv_features2d opencv_videoio opencv_imgcodecs opencv_video opencv_photo opencv_ml opencv_flann ncurses)
+target_link_libraries(tirtle-client ${OpenCV_LIBS})
 
 add_executable(test-client test/test_tirtle_client.cpp)
 target_link_libraries(test-client tirtle-client)
