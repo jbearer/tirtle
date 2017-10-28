@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-set(CMAKE_CXX_FLAGS "-I/home/pi/opencv-3.1.1/include/")
+set(CMAKE_CXX_FLAGS "-I/home/pi/opencv-3.3.1/include/")
 set(CMAKE_CXX_STANDARD 11)
 project( Tirtle )
-#find_package( OpenCV REQUIRED )
 add_executable( Tirtle ObjectTrack/object_track.cpp )
 
 set(OpenCV_LIB_PATH /usr/local/lib/ )
