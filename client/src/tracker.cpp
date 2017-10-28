@@ -150,3 +150,29 @@ tirtle::tracker::~tracker()
     halt.store(true);
     loop.get(); // wait for loop to stop
 }
+
+static void track(point_t & loc, angle_t & heading)
+{
+    // TODO grab one frame and analyze it
+}
+
+static void loop_track(tirtle_client & client, std::atomic<bool> & halt)
+{
+    while (!halt.load()) {
+        point_t loc;
+        angle_t heading;
+        track(loc, heading);
+        client.set_position(loc, heading);
+    }
+}
+
+tirtle::tracker::tracker(tirtle_client & client)
+    : halt(false)
+    , loop(std::async(std::launch::async, loop_track, client, halt))
+{}
+
+tirtle::tracker::~tracker()
+{
+    halt.store(true);
+    loop.get(); // wait for loop to stop
+}
