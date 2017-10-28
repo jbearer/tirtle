@@ -169,7 +169,7 @@ void set_position(point_t location_, angle_t angle_){
    * DETERMINE WHETHER TIRTLE HAS REACHED NEXT POINT ON PATH [AND UPDATE IF IT HAS]
    --------------------------------------------------------------------------------*/
 
-  point_t goal_point = paths[current_path_num].points[current_segment_num]; /* the location of the next point that tirtle needs to get to */
+  point_t goal_point = paths[current_path_num].points[current_segment_num+1]; /* the location of the next point that tirtle needs to get to */
 
    /* current x and y coordinate values of the tirtle*/
   coord_t x1 = current_point.x;
@@ -316,7 +316,7 @@ void step_tirtle(){
       turn(turn_direction);
       break;
     case(STOP):
-      delay(1);
+      exit(0);
       break;
     default:
       break;
