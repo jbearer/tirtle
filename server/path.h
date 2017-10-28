@@ -34,8 +34,6 @@ inline std::ostream & operator<<(std::ostream & out, const point_t & loc)
     return out << "(" << loc.x << ", " << loc.y << ")";
 }
 
-<<<<<<< HEAD
-=======
 inline bool operator==(const point_t & p1, const point_t & p2)
 {
     return p1.x == p2.x && p1.y == p2.y;
@@ -62,7 +60,6 @@ inline bool operator!=(const path_t & p1, const path_t & p2)
     return !(p1 == p2);
 }
 
->>>>>>> 5bad83f39634c8a5b6a28905b74f380b03542ffb
 inline point_t make_point(coord_t x, coord_t y)
 {
     point_t p;
