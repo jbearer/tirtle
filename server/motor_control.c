@@ -46,7 +46,7 @@ const int BACK = 0;
 void setDir(bool motor, bool dir){
   /* Choose pins based on motor */
   int dir1, dir2;
-  if(motor){ 
+  if(motor){
     dir1 = dirL1;
     dir2 = dirL2;
   }
@@ -68,7 +68,7 @@ void setDir(bool motor, bool dir){
 /*-------------------------------------------------------------------------------
  *                                MOTOR CONTROLS
  --------------------------------------------------------------------------------*/
-   
+
 void moveFwd(){
   /* Set PWM values, (same speed) */
   analogWrite(enL, SPEED);
@@ -95,13 +95,13 @@ void turn(bool dir){
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
  * @@@@@@@@@@@@@@@@@@@@@@@@@   LOAD IMAGE    @@@@@@@@@@@@@@@@@@@@@@@@@@@@
  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
- 
+
 /* load image paths and store them for use */
 void load_image(path_t *path_, length_t num_paths)
 {
   paths = path_;
   number_of_paths = num_paths;
-  
+
 }
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -115,7 +115,7 @@ int current_path_num = 0;
 int current_segment_num = 0;
 
 /* allowable error margin between tirtle position and position of point along path*/
-coord_t error_margin = 1; 
+coord_t error_margin = 1;
 
 /* (%) allowable percent deviation between tirtle slope and desired path slope */
 coord_t allowable_percent_err = 1;
@@ -144,7 +144,7 @@ bool turn_direction = 0;
 coord_t delta_d(coord_t del_x, coord_t del_y){
 
   /* distance between the previous point and goal point*/
-  return sqrt((del_y)^2 + ((del_x)^2));
+  return sqrt((del_y*del_y) + (del_x*del_x));
 }
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -164,11 +164,11 @@ void set_position(point_t location_, angle_t angle_){
     x0 = current_point.x;
     y0 = current_point.y;
   }
-  
+
   /*-------------------------------------------------------------------------------
    * DETERMINE WHETHER TIRTLE HAS REACHED NEXT POINT ON PATH [AND UPDATE IF IT HAS]
    --------------------------------------------------------------------------------*/
-   
+
   point_t goal_point = paths[current_path_num].points[current_segment_num]; /* the location of the next point that tirtle needs to get to */
 
    /* current x and y coordinate values of the tirtle*/
@@ -196,28 +196,28 @@ void set_position(point_t location_, angle_t angle_){
       /* update the goal point */
       current_segment_num = current_segment_num + 1;
       goal_point = paths[current_path_num].points[current_segment_num];
-  
+
       /*update x and y coordinates of the next point on tirtle's path*/
       coord_t x2 = goal_point.x;
       coord_t y2 = goal_point.y;
-      
+
       /*update delta x and delta y between goal and current coordinate*/
       del_x = absolute(x2,x1);
       del_y = absolute(y2,y1);
-  
+
       del_dist = delta_d(del_x, del_y); /* calculate distance between current and new goal point*/
     }
     else{
       /* send some sort of signal to indicate that it has finished a path */
       STATE = STOP;
     }
-      
+
   }
-  
+
   /*------------------------------------------------------------------------
    * DETERMINE ANGLE AND DISTANCE BETWEEN TIRTLE AND NEXT POINT ON PATH
    ------------------------------------------------------------------------*/
-   
+
   angle_t current_angle = angle_; /* the current orientation angle of tirtle*/
 
   /* initialize the goal orientation */
@@ -251,8 +251,8 @@ void set_position(point_t location_, angle_t angle_){
     else{
       goal_angle = 90;
     }
-  }  
-  
+  }
+
   /*------------------------------------------------------------------------
    *    DETERMINE WHETHER TIRTLE NEEDS TO REORIENT ITSELF [IT'S OFF COURSE]
    ------------------------------------------------------------------------*/
@@ -285,7 +285,7 @@ void set_position(point_t location_, angle_t angle_){
     STATE = TURN;
    }
 
-  
+
 }
 
 
@@ -321,6 +321,6 @@ void step_tirtle(){
     default:
       break;
   }
-  
+
 }
 
