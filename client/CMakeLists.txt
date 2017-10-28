@@ -31,3 +31,6 @@ target_link_libraries(test-client tirtle-client)
 
 add_executable(test-tirtle test/test_tirtle.cpp)
 target_link_libraries(test-tirtle tirtle-client)
+
+add_executable(test-e2e test/test_e2e.cpp)
+target_link_libraries(test-e2e tirtle-client)

@@ -1,3 +1,4 @@
+#include <atomic>
 #include <iostream>
 #include <vector>
 #include <ctime>
@@ -5,6 +6,10 @@
 #include "math.h"
 #include "opencv2/opencv.hpp"
 #include "opencv2/aruco.hpp"
+
+#include "tirtle/path.h"
+#include "tirtle/tirtle_client.h"
+#include "tirtle/tracker.h"
 
 using namespace std;
 
@@ -97,35 +102,61 @@ tuple<cv::Point2f, float> findPoint(vector<cv::Point2f> outer_corners, vector<cv
 
 
 
-int main()
+// int main()
+// {
+//     cv::Mat inputImage = cv::imread("markers/test2.jpg");
+
+//     auto corner_info = detectMarkers(inputImage);
+//     auto corners = get<0>(corner_info);
+//     auto ids = get<1>(corner_info);
+
+//     vector<cv::Point2f> outer_corners = getOuterCorners(corners, ids);
+
+//     auto robot_corners = getCorners(0, ids, corners);
+
+//     auto point_angle = findPoint(outer_corners, robot_corners);
+//     cv::Point2f point = get<0>(point_angle);
+//     float angle = get<1>(point_angle);
+
+//     cout << "point is (" << point.x << ", " << point.y << "), angle is " << angle << endl;
+
+
+
+//     // for (auto id : markerIds) {
+//     //     cout << id << " ";
+//     // } cout << endl;
+
+//     for (auto pt : outer_corners) {
+//         cv::circle(inputImage, pt, 5, cv::Scalar(255, 0, 0), -1);
+//     }
+
+//     cv::imwrite("output.png", inputImage);
+
+//     cout << "hello" << endl;
+// }
+
+static void track(point_t & loc, angle_t & heading)
 {
-    cv::Mat inputImage = cv::imread("markers/test2.jpg");
+    // TODO grab one frame and analyze it
+}
 
-    auto corner_info = detectMarkers(inputImage);
-    auto corners = get<0>(corner_info);
-    auto ids = get<1>(corner_info);
-
-    vector<cv::Point2f> outer_corners = getOuterCorners(corners, ids);
-
-    auto robot_corners = getCorners(0, ids, corners);
-
-    auto point_angle = findPoint(outer_corners, robot_corners);
-    cv::Point2f point = get<0>(point_angle);
-    float angle = get<1>(point_angle);
-
-    cout << "point is (" << point.x << ", " << point.y << "), angle is " << angle << endl;
-
-
-
-    // for (auto id : markerIds) {
-    //     cout << id << " ";
-    // } cout << endl;
-
-    for (auto pt : outer_corners) {
-        cv::circle(inputImage, pt, 5, cv::Scalar(255, 0, 0), -1);
+static void loop_track(tirtle_client & client, std::atomic<bool> & halt)
+{
+    while (!halt.load()) {
+        point_t loc;
+        angle_t heading;
+        track(loc, heading);
+        client.set_position(loc, heading);
     }
+}
 
-    cv::imwrite("output.png", inputImage);
+tirtle::tracker::tracker(tirtle_client & client)
+    : halt(false)
+    , loop(std::async(std::launch::async, loop_track, client, halt))
+{}
 
-    cout << "hello" << endl;
+tirtle::tracker::~tracker()
+{
+    halt.store(true);
+    loop.get(); // wait for loop to stop
 }
