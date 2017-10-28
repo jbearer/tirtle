@@ -12,6 +12,6 @@ typedef struct {
 } point_t;
 
 typedef struct {
-    const point_t         *points;
+    point_t         *points;
     length_t        length;
 } path_t;
