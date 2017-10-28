@@ -18,7 +18,7 @@ namespace tirtle {
     struct tirtle_impl
     {
         tirtle_impl()
-            : loc(make_point(0, 0))
+            : loc(make_point(50, 50))
             , heading(0)
             , drawing(true)
         {}

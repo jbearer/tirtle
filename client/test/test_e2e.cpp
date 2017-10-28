@@ -1,4 +1,6 @@
+#include <chrono>
 #include <memory>
+#include <thread>
 
 #include "tirtle/tirtle.h"
 #include "tirtle/tirtle_client.h"
@@ -19,4 +21,6 @@ int main()
     tirtle.forward(50); // (0, 0)
 
     tirtle.draw(*client);
+
+    std::this_thread::sleep_for(std::chrono::seconds(60));
 }

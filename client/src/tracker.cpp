@@ -8,6 +8,7 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/aruco.hpp"
 
+#include "tirtle/logging.h"
 #include "tirtle/path.h"
 #include "tirtle/tirtle_client.h"
 #include "tirtle/tracker.h"
@@ -31,6 +32,7 @@ vector<cv::Point2f> getCorners(int index, vector< int > markerIds, vector< vecto
             return markerCorners[i];
         }
     }
+    return vector<cv::Point2f>();
 }
 
 std::tuple< vector<vector<cv::Point2f>>, vector<int>>  detectMarkers(cv::Mat& inputImage)
@@ -87,8 +89,8 @@ float getAngle(cv::Mat turtle_corners)
 tuple<cv::Point2f, float> findPoint(vector<cv::Point2f> outer_corners, vector<cv::Point2f> robot_corners)
 {
 
-    int width = 200;
-    int height = 150;
+    int width = 300;
+    int height = 200;
 
     cv::Point2f bottom_left = cv::Point2f(0, 0);
     cv::Point2f top_left = cv::Point2f(0, height);
@@ -114,62 +116,82 @@ unique_ptr<tuple<cv::Point2f, float>> turtle_pos(cv::Mat& inputImage)
     auto corners = get<0>(corner_info);
     auto ids = get<1>(corner_info);
 
+    cout << "num corners: " << corners.size() << endl;
+
+    for (int i = 0; i < 5; ++i) {
+        if (getCorners(i, ids, corners) == vector<cv::Point2f>()) {
+            cout << " Failed to detect " << i << endl;
+        }
+    }
+
     if (corners.size() != 5){
         return nullptr;
     }
 
     vector<cv::Point2f> outer_corners = getOuterCorners(corners, ids);
 
+    auto robot_corners = getCorners(0, ids, corners);
     auto point_angle = findPoint(outer_corners, robot_corners);
-    cv::imwrite("output.png", inputImage);
+
     return make_unique<tuple<cv::Point2f, float>>(point_angle);
 }
 
-static void track(point_t & loc, angle_t & heading)
+void tirtle::tracker::track()
 {
-    // TODO grab one frame and analyze it
+    cv::Mat inputImage;
+    v.read(inputImage);
+
+    if (inputImage.empty()) {
+        cout << "empty image!" << endl;
+        return;
+    }
+
+    auto res = turtle_pos(inputImage);
+    if (!res){
+        return;
+    }
+
+    auto& dereferenced_res = *res;
+    cv::Point2f pt = get<0>(dereferenced_res);
+    float angle = get<1>(dereferenced_res);
+
+    point_t loc;
+    loc.x = pt.x;
+    loc.y = pt.y;
+
+    angle_t t = round(angle);
+
+    tirtle::log::info("broadcasting pos=", loc, ", angle=", t);
+    client.set_position(loc, t);
 }
 
-static void loop_track(tirtle_client & client, std::atomic<bool> & halt)
+int tirtle::tracker::loop_track()
 {
     while (!halt.load()) {
         point_t loc;
         angle_t heading;
-        track(loc, heading);
-        client.set_position(loc, heading);
+        track();
     }
+    return 0;
 }
 
-tirtle::tracker::tracker(tirtle_client & client)
-    : halt(false)
-    , loop(std::async(std::launch::async, loop_track, client, halt))
-{}
+tirtle::tracker::tracker(tirtle::tirtle_client & client_)
+    : client(client_)
+    , halt(false)
+    , v(0)
 
-tirtle::tracker::~tracker()
 {
-    halt.store(true);
-    loop.get(); // wait for loop to stop
-}
-
-static void track(point_t & loc, angle_t & heading)
-{
-    // TODO grab one frame and analyze it
-}
-
-static void loop_track(tirtle_client & client, std::atomic<bool> & halt)
-{
-    while (!halt.load()) {
-        point_t loc;
-        angle_t heading;
-        track(loc, heading);
-        client.set_position(loc, heading);
+    v.open(0);
+    if(!v.isOpened()){
+        cout<< "ERROR ACQUIRING VIDEO FEED" << endl;
+        tirtle::log::fatal("bad");
     }
-}
+    else {
+        cout << "acquired feed" << endl;
+    }
 
-tirtle::tracker::tracker(tirtle_client & client)
-    : halt(false)
-    , loop(std::async(std::launch::async, loop_track, client, halt))
-{}
+    loop = std::async(std::launch::async, [this]() { return this->loop_track(); });
+}
 
 tirtle::tracker::~tracker()
 {
