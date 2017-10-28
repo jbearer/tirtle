@@ -6,8 +6,10 @@
 extern "C" {
 #endif
 
-void set_position  (point_t  loc, angle_t  angle);
-void load_image( path_t *path, length_t num_paths);
+void set_position(point_t loc, angle_t angle);
+void load_image(path_t *paths, length_t num_paths);
+void step_tirtle();
+void init_tirtle();
 
 #ifdef __cplusplus
 }

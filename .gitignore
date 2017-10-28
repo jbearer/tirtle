@@ -1,0 +1,11 @@
+CMakeFiles/*
+Makefile
+Tirtle
+CMakeCache.txt
+cmake_install.cmake
+*/bin/*
+*/lib/*
+client/Makefile
+client/CMakeCache.txt
+client/CMakeFiles/*
+client/cmake_install.cmake
