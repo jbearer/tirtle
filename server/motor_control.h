@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 void set_position(point_t loc, angle_t angle);
-void load_image(path_t *path, length_t num_paths);
+void load_image(const path_t *path, length_t num_paths);
 
 #ifdef __cplusplus
 }

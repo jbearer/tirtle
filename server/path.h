@@ -4,7 +4,7 @@
 
 typedef uint32_t coord_t;
 typedef uint16_t length_t;
-typedef char angle_t;
+typedef uint16_t angle_t;
 
 typedef struct {
     coord_t x;
@@ -12,6 +12,6 @@ typedef struct {
 } point_t;
 
 typedef struct {
-    point_t         *points;
+    const point_t         *points;
     length_t        length;
 } path_t;
