@@ -9,7 +9,7 @@
 
 typedef uint32_t coord_t;
 typedef uint16_t length_t;
-typedef uint16_t angle_t;
+typedef uint8_t angle_t;
 
 // Point in the first qudrant of 2D cartesian space
 typedef struct {
