@@ -35,6 +35,7 @@ set(OpenCV_ARUCO_INCLUDE "${OpenCV_CONTRIB_ROOT_DIR}/aruco/include")
 include_directories(include)
 include_directories(../common/include)
 
+# tirtle client library
 file(GLOB_RECURSE CLIENT_SRC src/*.cpp)
 add_library(tirtle-client SHARED ${CLIENT_SRC})
 target_include_directories(tirtle-client PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -42,11 +43,14 @@ target_include_directories(tirtle-client PRIVATE ${OpenCV_ARUCO_INCLUDE})
 target_link_libraries(tirtle-client bluetooth)
 target_link_libraries(tirtle-client ${OpenCV_LIBS})
 
+# send some test commands over Bluetooth via the tirtle_client
 add_executable(test-client test/test_tirtle_client.cpp)
 target_link_libraries(test-client tirtle-client)
 
+# test the tirtle graphics interface
 add_executable(test-tirtle test/test_tirtle.cpp)
 target_link_libraries(test-tirtle tirtle-client)
 
+# an end-to-end test to draw a simple shape
 add_executable(test-e2e test/test_e2e.cpp)
 target_link_libraries(test-e2e tirtle-client)

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -164,7 +165,8 @@ struct tirtle_client_impl
 
     void set_position(point_t loc, angle_t angle) override
     {
-        tirtle::log::debug("setting position(loc=", loc, ",angle=", angle);
+        assert(angle < 360);
+        tirtle::log::debug("setting position(loc=", loc, ",angle=", angle, ")");
         bt_send(socket, SET_POSITION);
         bt_send(socket, loc);
         bt_send(socket, angle);

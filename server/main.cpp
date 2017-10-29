@@ -5,9 +5,6 @@
 #include "tirtle/rpc.h"
 #include "tirtle/rpc_parser.h"
 
-#define MAX_PATHS 100
-#define MAX_POINTS 100
-
 #define RX 0
 #define TX 1
 

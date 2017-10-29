@@ -38,6 +38,20 @@ add_library(arduino-core ${ARDUINO_CORE_C_SRC} ${ARDUINO_CORE_CXX_SRC})
 
 # SoftwareSerial library
 add_library(software-serial ${ARDUINO_ROOT_DIR}/libraries/SoftwareSerial/SoftwareSerial.cpp)
+target_link_libraries(software-serial arduino-core)
 
-add_executable_avr(server ${SERVER_C_SRC} ${SERVER_CXX_SRC})
-target_link_libraries(server arduino-core software-serial)
+set(ARDUINO_LIBS arduino-core software-serial)
+
+# tirtle server library
+add_library(tirtle-server STATIC ${SERVER_C_SRC} ${SERVER_CXX_SRC})
+target_link_libraries(tirtle-server ${ARDUINO_LIBS})
+
+# main server executable
+add_executable_avr(server main.cpp)
+target_link_libraries(server tirtle-server)
+target_link_libraries(server ${ARDUINO_LIBS})
+
+# test RPC server
+add_executable_avr(test-echo test/echo.cpp)
+target_link_libraries(test-echo tirtle-server)
+target_link_libraries(test-echo ${ARDUINO_LIBS})
