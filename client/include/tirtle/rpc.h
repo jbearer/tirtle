@@ -1,1 +1,1 @@
-/home/daniel/Documents/GitHub/tirtle/client/../server/rpc.h
+../../../server/rpc.h

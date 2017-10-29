@@ -1,1 +1,1 @@
-/home/daniel/Documents/GitHub/tirtle/client/../server/path.h
+../../../server/path.h

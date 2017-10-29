@@ -19,7 +19,7 @@ void drawMarkers()
 {
     for (int i = 0; i < 5; ++i) {
         cv::Mat markerImage;
-        cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+        auto dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
         cv::aruco::drawMarker(dictionary, i, 200, markerImage, 1);
         imwrite("markers/marker" + to_string(i) + ".png", markerImage);
     }
@@ -39,8 +39,8 @@ std::tuple< vector<vector<cv::Point2f>>, vector<int>>  detectMarkers(cv::Mat& in
 {
     vector< int > markerIds;
     vector< vector<cv::Point2f> > markerCorners, rejectedCandidates;
-    cv::aruco::DetectorParameters parameters;
-    cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    cv::Ptr<cv::aruco::DetectorParameters> parameters(new cv::aruco::DetectorParameters);
+    auto dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
 
     clock_t start = clock();
     cv::aruco::detectMarkers(inputImage, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);

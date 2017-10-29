@@ -8,7 +8,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 # C++ configuration
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPI_CXX -I/home/pi/opencv-3.3.1/include/ -I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPI_CXX")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if ("${CMAKE_BUILD_TYPE}" EQUAL Release)
@@ -22,6 +22,8 @@ endif()
 find_package(OpenCV REQUIRED COMPONENTS)
 
 # OpenCV aruco module
+# If CMake cannot automatically find opencv contrib modules, specify OPENCV_EXTRA_MODULES_PATH
+# on the command line
 set(OpenCV_CONTRIB_POSSIBLE_ROOT_DIRS
     "${OPENCV_EXTRA_MODULES_PATH}")
 find_path(OpenCV_CONTRIB_ROOT_DIR
