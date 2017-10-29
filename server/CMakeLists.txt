@@ -10,6 +10,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 set(PROGRAMMER arduino)
+set(SERIAL_DEV /dev/ttyACM0)
 
 # Find Arduino libraries
 set(ARDUINO_POSSIBLE_ROOT_DIRS

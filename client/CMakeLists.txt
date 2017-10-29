@@ -2,11 +2,6 @@ project(tirtle C CXX)
 
 cmake_minimum_required(VERSION 3.5)
 
-# Built tree configuration
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-
 # C++ configuration
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPI_CXX")
 set(CMAKE_CXX_STANDARD 14)
