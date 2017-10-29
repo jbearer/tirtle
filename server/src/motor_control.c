@@ -1,9 +1,17 @@
+
+//#include "path.h"
+//#include <Arduino.h>
+//#include <stdint.h>
+//
+//#include "motor_control.h"
+
 #include <Arduino.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "tirtle/motor_control.h"
 #include "tirtle/path.h"
+
 
 static path_t *paths;
 static length_t number_of_paths;
@@ -12,8 +20,8 @@ static length_t number_of_paths;
  * @@@@@@@@@@@@@@@@@@@@@   MOTOR SETTINGS    @@@@@@@@@@@@@@@@@@@@@@@@@@@@
  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 
-const uint8_t SPEED = 50; /* Speed 0-255 (pwm value) */
-const uint8_t TURN_SPEED = 10; /*Slow speed*/
+const uint8_t SPEED = 100; /* Speed 0-255 (pwm value) */
+const uint8_t TURN_SPEED = 100; /*Slow speed*/
 
 /* list the possible states that tirtle can be in */
 enum state {
@@ -56,12 +64,12 @@ void setDir(bool motor, bool dir){
   }
   /* Digital write direction pins */
   if(dir){ // FWD
-    digitalWrite(dir1, HIGH);
-    digitalWrite(dir2, LOW);
-  }
-  else{
     digitalWrite(dir1, LOW);
     digitalWrite(dir2, HIGH);
+  }
+  else{
+    digitalWrite(dir1, HIGH);
+    digitalWrite(dir2, LOW);
   }
 }
 
@@ -71,7 +79,7 @@ void setDir(bool motor, bool dir){
 
 void moveFwd(){
   /* Set PWM values, (same speed) */
-  analogWrite(enL, SPEED);
+  analogWrite(enL, SPEED+2);
   analogWrite(enR, SPEED);
   setDir(L, FWD);
   setDir(R, FWD);
@@ -80,7 +88,7 @@ void moveFwd(){
 /* Dir: 0 = CCW, 1 = CW */
 void turn(bool dir){
   /* Slowly rotate */
-  analogWrite(enL, TURN_SPEED);
+  analogWrite(enL, TURN_SPEED+2);
   analogWrite(enR, TURN_SPEED);
   if(dir){ /* Clockwise */
     setDir(L, FWD);

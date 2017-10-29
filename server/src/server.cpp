@@ -17,6 +17,7 @@ void setup()
 {
     Serial.begin(9600);
     BT.begin(9600);
+    init_tirtle();
 }
 
 void loop()
@@ -46,4 +47,6 @@ void loop()
             Serial.println(comm);
         }
     }
+
+    step_tirtle();
 }

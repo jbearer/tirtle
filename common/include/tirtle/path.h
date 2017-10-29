@@ -9,6 +9,7 @@
 
 typedef uint32_t coord_t;
 typedef uint16_t length_t;
+
 typedef uint16_t angle_t;
 
 // Point in the first qudrant of 2D cartesian space
@@ -26,6 +27,7 @@ typedef struct {
 #ifdef PI_CXX
 // Helper functions only defined for the Raspberry PI client
 // The Arduino can't spare the memory, plus it doesn't even support, eg, iostream
+
 
 inline std::ostream & operator<<(std::ostream & out, const point_t & loc)
 {
