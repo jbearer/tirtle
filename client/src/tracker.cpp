@@ -30,7 +30,7 @@ void drawMarkers()
 
 vector<cv::Point2f> getCorners(int index, vector< int > markerIds, vector< vector<cv::Point2f> > markerCorners)
 {
-    for (int i = 0; i < markerIds.size(); ++i) {
+    for (size_t i = 0; i < markerIds.size(); ++i) {
         if (markerIds[i] == index) {
             return markerCorners[i];
         }
@@ -51,8 +51,6 @@ std::tuple< vector<vector<cv::Point2f>>, vector<int>>  detectMarkers(cv::Mat& in
 
     cout << "rejected candidates: " << rejectedCandidates.size() << endl;
     cout << float(end - start) / CLOCKS_PER_SEC << endl;
-
-    int num_markers = 5;
 
     return std::make_tuple(markerCorners, markerIds);
 
@@ -169,9 +167,7 @@ void tirtle::tracker::track()
 
 int tirtle::tracker::loop_track()
 {
-    while (!halt.load()) {
-        point loc;
-        angle_t heading;
+    while (!halt.load()) {;
         track();
     }
     return 0;

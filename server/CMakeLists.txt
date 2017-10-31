@@ -8,7 +8,8 @@ file(GLOB SERVER_SRC src/*.cpp)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -DARDUINO -Os")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DARDUINO -Os")
+set(CXX_WERROR_FLAGS "-Wall -Wextra -Werror")
 
 set(PROGRAMMER arduino)
 set(SERIAL_DEV /dev/ttyACM0)
@@ -45,14 +46,17 @@ set(ARDUINO_LIBS arduino-core software-serial)
 
 # tirtle server library
 add_library(tirtle-server STATIC ${SERVER_SRC} ${TIRTLE_COMMON_SRC})
+set_target_properties(tirtle-server PROPERTIES COMPILE_FLAGS ${CXX_WERROR_FLAGS})
 target_link_libraries(tirtle-server ${ARDUINO_LIBS})
 
 # main server executable
 add_executable_avr(server main.cpp)
+set_target_properties(server PROPERTIES COMPILE_FLAGS ${CXX_WERROR_FLAGS})
 target_link_libraries(server tirtle-server)
 target_link_libraries(server ${ARDUINO_LIBS})
 
 # test RPC server
 add_executable_avr(test-echo test/echo.cpp)
+set_target_properties(test-echo PROPERTIES COMPILE_FLAGS ${CXX_WERROR_FLAGS})
 target_link_libraries(test-echo tirtle-server)
 target_link_libraries(test-echo ${ARDUINO_LIBS})

@@ -16,10 +16,10 @@ namespace tirtle {
         void track();
         int loop_track();
 
-        tirtle_client       &client;
-        std::atomic<bool>  halt;
-        std::future<int>   loop;
-        cv::VideoCapture v;
+        tirtle_client &     client;
+        std::atomic<bool>   halt;
+        std::future<int>    loop;
+        cv::VideoCapture    v;
     };
 
 }
