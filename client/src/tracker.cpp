@@ -10,10 +10,13 @@
 
 #include "tirtle/logging.h"
 #include "tirtle/path.h"
+#include "tirtle/tirtle.h"
 #include "tirtle/tirtle_client.h"
 #include "tirtle/tracker.h"
 
 using namespace std;
+
+using tirtle::canvas_size;
 
 void drawMarkers()
 {
@@ -88,9 +91,8 @@ float getAngle(cv::Mat turtle_corners)
 
 tuple<cv::Point2f, float> findPoint(vector<cv::Point2f> outer_corners, vector<cv::Point2f> robot_corners)
 {
-
-    int width = 300;
-    int height = 200;
+    int width = canvas_size.x;
+    int height = canvas_size.y;
 
     cv::Point2f bottom_left = cv::Point2f(0, 0);
     cv::Point2f top_left = cv::Point2f(0, height);
@@ -155,27 +157,27 @@ void tirtle::tracker::track()
     cv::Point2f pt = get<0>(dereferenced_res);
     float angle = get<1>(dereferenced_res);
 
-    point_t loc;
+    point loc;
     loc.x = pt.x;
     loc.y = pt.y;
 
     angle_t t = round(angle);
 
-    tirtle::log::info("broadcasting pos=", loc, ", angle=", t);
+    log::info("broadcasting pos=", loc, ", angle=", t);
     client.set_position(loc, t);
 }
 
 int tirtle::tracker::loop_track()
 {
     while (!halt.load()) {
-        point_t loc;
+        point loc;
         angle_t heading;
         track();
     }
     return 0;
 }
 
-tirtle::tracker::tracker(tirtle::tirtle_client & client_)
+tirtle::tracker::tracker(tirtle_client & client_)
     : client(client_)
     , halt(false)
     , v(0)
@@ -184,9 +186,8 @@ tirtle::tracker::tracker(tirtle::tirtle_client & client_)
     v.open(0);
     if(!v.isOpened()){
         cout<< "ERROR ACQUIRING VIDEO FEED" << endl;
-        tirtle::log::fatal("bad");
-    }
-    else {
+        log::fatal("bad");
+    } else {
         cout << "acquired feed" << endl;
     }
 

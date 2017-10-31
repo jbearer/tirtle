@@ -8,7 +8,7 @@
 #include "tirtle/tirtle.h"
 #include "tirtle/tirtle_client.h"
 
-static double deg2rad(coord_t deg)
+static double deg2rad(tirtle::coord_t deg)
 {
     return (deg*M_PI) / 180.0;
 }
@@ -18,19 +18,12 @@ namespace tirtle {
     struct tirtle_impl
     {
         tirtle_impl()
-            : loc(make_point(50, 50))
+            : loc(start_loc)
             , heading(0)
             , drawing(true)
         {}
 
-        ~tirtle_impl()
-        {
-            for (const auto & path : paths) {
-                delete[] path.points;
-            }
-        }
-
-        point_t get_position() const
+        point get_position() const
         {
             return loc;
         }
@@ -40,9 +33,15 @@ namespace tirtle {
             return heading;
         }
 
-        void move_to(point_t dest)
+        void move_to(point dest)
         {
             log::debug("moving to point ", dest, " (facing ", (int)heading, ")");
+
+            if (dest.x > canvas_size.x || dest.y > canvas_size.y) {
+                log::error("point ", dest, " is not on canvas of size ", canvas_size);
+                return;
+            }
+
             if (drawing) {
                 current_path.push_back(loc);
             }
@@ -71,7 +70,7 @@ namespace tirtle {
         void draw(tirtle_client & client)
         {
             if (drawing) finish_path();
-            client.load_image(paths);
+            client.load_image(image(paths));
         }
 
     private:
@@ -80,19 +79,15 @@ namespace tirtle {
         {
             log::debug("finishing path at point ", loc);
             current_path.push_back(loc);
-            path_t path;
-            path.length = current_path.size();
-            path.points = new point_t[current_path.size()];
-            memcpy(path.points, current_path.data(), current_path.size()*sizeof(current_path[0]));
-            paths.push_back(path);
+            paths.emplace_back(std::move(current_path));
             current_path.clear();
         }
 
-        point_t                 loc;
-        angle_t                 heading;
-        bool                    drawing;
-        std::vector<point_t>    current_path;
-        std::vector<path_t>     paths;
+        point                 loc;
+        angle_t               heading;
+        bool                  drawing;
+        std::vector<point>    current_path;
+        std::vector<path>     paths;
     };
 
     tirtle::tirtle()
@@ -106,7 +101,7 @@ namespace tirtle {
 
     void tirtle::forward(length_t delta)
     {
-        point_t dest = get_position();
+        point dest = get_position();
         angle_t heading = get_orientation();
 
         double delx = delta * std::cos(deg2rad(heading));
@@ -144,7 +139,7 @@ namespace tirtle {
         turn_to((delta + get_orientation()) % 360);
     }
 
-    void tirtle::move_to(point_t loc)
+    void tirtle::move_to(const point & loc)
     {
         impl->move_to(loc);
     }
@@ -169,7 +164,7 @@ namespace tirtle {
         impl->pen_down();
     }
 
-    point_t tirtle::get_position() const
+    point tirtle::get_position() const
     {
         return impl->get_position();
     }

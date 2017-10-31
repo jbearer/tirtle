@@ -1,49 +1,24 @@
-#include <SoftwareSerial.h>
+#include <Arduino.h>
 
-#include "tirtle/motor_control.h"
+#include "tirtle/bluetooth.h"
 #include "tirtle/path.h"
-#include "tirtle/rpc.h"
-#include "tirtle/rpc_parser.h"
+#include "tirtle/robot.h"
+#include "tirtle/rpc_server.h"
 
 #define RX 0
 #define TX 1
 
-SoftwareSerial BT(RX, TX);
+using namespace tirtle;
 
-void setup()
-{
-    Serial.begin(9600);
-    BT.begin(9600);
-    init_tirtle();
-}
+tirtle::bluetooth_stream bt(RX, TX);
+tirtle::robot            bot;
+
+void setup() {}
 
 void loop()
 {
-    if (BT.available())
-    {
-        rpc_command comm = BT.read();
-        switch (comm) {
-        case LOAD_IMAGE:
-            {
-              path_t *paths;
-              length_t length;
-              parse_load_image(BT, paths, length);
-              load_image(paths, length);
-            }
-            break;
-        case SET_POSITION:
-            {
-              point_t pos;
-              angle_t angle;
-              parse_set_position(BT, pos, angle);
-              set_position(pos, angle);
-            }
-            break;
-        default:
-            Serial.print("unrecognized rpc command: ");
-            Serial.println(comm);
-        }
+    if (bt.available()) {
+        rpc::serve(bt, bt, bot);
     }
-
-    step_tirtle();
+    bot.step();
 }

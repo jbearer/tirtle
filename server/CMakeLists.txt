@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/avr-arduino-cmake/avr-arduino-toolchain.cmake)
 project(tirtle)
 
-file(GLOB SERVER_C_SRC src/*.c)
-file(GLOB SERVER_CXX_SRC src/*.cpp)
+file(GLOB TIRTLE_COMMON_SRC ../common/src/*.cpp)
+file(GLOB SERVER_SRC src/*.cpp)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -DARDUINO -Os")
 
 set(PROGRAMMER arduino)
 set(SERIAL_DEV /dev/ttyACM0)
@@ -43,7 +44,7 @@ target_link_libraries(software-serial arduino-core)
 set(ARDUINO_LIBS arduino-core software-serial)
 
 # tirtle server library
-add_library(tirtle-server STATIC ${SERVER_C_SRC} ${SERVER_CXX_SRC})
+add_library(tirtle-server STATIC ${SERVER_SRC} ${TIRTLE_COMMON_SRC})
 target_link_libraries(tirtle-server ${ARDUINO_LIBS})
 
 # main server executable

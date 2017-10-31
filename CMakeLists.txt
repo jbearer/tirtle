@@ -4,6 +4,9 @@ project(tirtle)
 
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
+set(TIRTLE_COMMON_INCLUDE common/include)
+file(GLOB TIRTLE_COMMON_SRC common/src/*.cpp)
+
 ExternalProject_Add(client
     SOURCE_DIR client
     BINARY_DIR client/build

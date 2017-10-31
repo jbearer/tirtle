@@ -3,7 +3,7 @@ project(tirtle C CXX)
 cmake_minimum_required(VERSION 3.5)
 
 # C++ configuration
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPI_CXX")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if ("${CMAKE_BUILD_TYPE}" EQUAL Release)
@@ -31,13 +31,17 @@ endif()
 
 set(OpenCV_ARUCO_INCLUDE "${OpenCV_CONTRIB_ROOT_DIR}/aruco/include")
 
+# Boost spirit
+include_directories(spirit/include)
+
 # tirtle headers
 include_directories(include)
 include_directories(../common/include)
 
 # tirtle client library
-file(GLOB_RECURSE CLIENT_SRC src/*.cpp)
-add_library(tirtle-client SHARED ${CLIENT_SRC})
+file(GLOB TIRTLE_COMMON_SRC ../common/src/*.cpp)
+file(GLOB CLIENT_SRC src/*.cpp)
+add_library(tirtle-client SHARED ${CLIENT_SRC} ${TIRTLE_COMMON_SRC})
 target_include_directories(tirtle-client PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_include_directories(tirtle-client PRIVATE ${OpenCV_ARUCO_INCLUDE})
 target_link_libraries(tirtle-client bluetooth)

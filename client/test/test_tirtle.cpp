@@ -7,41 +7,32 @@
 #include "tirtle/tirtle.h"
 #include "tirtle/tirtle_client.h"
 
+using namespace tirtle;
+
 struct mock_client
-    : tirtle::tirtle_client
+    : tirtle_client
 {
-    std::vector<path_t> img;
+    image img;
 
     mock_client() = default;
 
-    void load_image(const std::vector<path_t> & paths) override
+    void load_image(const image & img_) override
     {
-        img = paths;
+        img = img_;
     }
 
-    void set_position(point_t, angle_t) override
+    void set_position(const point &, angle_t) override
     {
-        tirtle::log::fatal("mock_client::set_position is not implemented");
+        log::fatal("mock_client::set_position is not implemented");
     }
 };
 
-static std::ostream & operator<<(std::ostream & out, const std::vector<path_t> & paths)
-{
-    for (size_t path = 0; path < paths.size(); ++path) {
-        out << "path " << path << '\n';
-        for (size_t point = 0; point < paths[path].length; ++point) {
-            out << "  " << paths[path].points[point] << '\n';
-        }
-    }
-    return out;
-}
-
-static void test(tirtle::tirtle & tirtle, const std::vector<path_t> & paths)
+static void test(tirtle::tirtle & tirtle, const image & img)
 {
     auto client = std::make_unique<mock_client>();
     tirtle.draw(*client);
-    if (client->img != paths) {
-        tirtle::log::fatal("error:\nexpected: \n", paths, "\nbut got: \n", client->img);
+    if (client->img != img) {
+        log::fatal("error:\nexpected: \n", img, "\nbut got: \n", client->img);
     }
 }
 
@@ -58,17 +49,17 @@ static void test1()
     tirtle.left(90);
     tirtle.forward(1);
 
-    std::vector<point_t> path1;
-    path1.push_back(make_point(0, 0));
-    path1.push_back(make_point(1, 0));
-    path1.push_back(make_point(1, 1));
-    path1.push_back(make_point(0, 1));
-    path1.push_back(make_point(0, 0));
+    path path1(5);
+    path1[0] = start_loc + point(0, 0);
+    path1[1] = start_loc + point(1, 0);
+    path1[2] = start_loc + point(1, 1);
+    path1[3] = start_loc + point(0, 1);
+    path1[4] = start_loc + point(0, 0);
 
-    std::vector<path_t> paths;
-    paths.push_back(make_path(path1));
+    image img(1);
+    img[0] = std::move(path1);
 
-    test(tirtle, paths);
+    test(tirtle, std::move(img));
 }
 
 static void test2()
@@ -87,19 +78,19 @@ static void test2()
 
     tirtle.forward(5);
 
-    std::vector<point_t> path1;
-    path1.push_back(make_point(0, 0));
-    path1.push_back(make_point(5, 5));
+    path path1(2);
+    path1[0] = start_loc + point(0, 0);
+    path1[1] = start_loc + point(5, 5);
 
-    std::vector<point_t> path2;
-    path2.push_back(make_point(5, 0));
-    path2.push_back(make_point(0, 0));
+    path path2(2);
+    path2[0] = start_loc + point(5, 0);
+    path2[1] = start_loc + point(0, 0);
 
-    std::vector<path_t> paths;
-    paths.push_back(make_path(path1));
-    paths.push_back(make_path(path2));
+    image img(2);
+    img[0] = std::move(path1);
+    img[1] = std::move(path2);
 
-    test(tirtle, paths);
+    test(tirtle, std::move(img));
 }
 
 int main()

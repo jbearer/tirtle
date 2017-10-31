@@ -2,6 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -18,7 +19,9 @@
 #include "tirtle/path.h"
 #include "tirtle/rpc.h"
 
-std::ostream & operator<<(std::ostream & out, const bdaddr_t & addr)
+namespace rpc = tirtle::rpc;
+
+tirtle::text_ostream & operator<<(tirtle::text_ostream & out, const bdaddr_t & addr)
 {
     char straddr[19];
     ba2str(&addr, straddr);
@@ -81,6 +84,15 @@ static bool bt_address(bdaddr_t & address,
     return found;
 }
 
+bool valid_address(const std::string & addr)
+{
+    static const std::string byte_re = "[0-9a-fA-F]{2}";
+    static const std::regex addr_re = std::regex(
+        byte_re + ':' + byte_re + ':' + byte_re + ':' + byte_re + ':' + byte_re + ':' + byte_re);
+
+    return std::regex_match(addr, addr_re);
+}
+
 static int bt_socket(const bdaddr_t & dest)
 {
     int fd = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -103,85 +115,82 @@ static int bt_socket(const bdaddr_t & dest)
     return fd;
 }
 
-template<class T>
-static void bt_send(int socket, T data)
+struct bt_ostream
+    : tirtle::binary_ostream
 {
-    tirtle::log::debug("sending ", sizeof(data), " bytes to fd ", socket, ": ", data);
-
-    size_t nbytes = 0;
-    while (nbytes < sizeof(data)) {
-        ssize_t status = write(socket, &data, sizeof(data));
-        if (status == -1) {
-            tirtle::log::pfatal("write");
-        }
-        tirtle::log::debug("sent ", status, "/", sizeof(data), " bytes to fd ", socket);
-        nbytes += status;
-    }
-}
-
-template<>
-void bt_send<point_t>(int socket, point_t loc)
-{
-    bt_send(socket, loc.x);
-    bt_send(socket, loc.y);
-}
-
-template<>
-void bt_send<path_t>(int socket, path_t path)
-{
-    bt_send(socket, path.length);
-    for (length_t p = 0; p < path.length; ++p) {
-        bt_send(socket, path.points[p]);
-    }
-}
-
-struct tirtle_client_impl
-    : tirtle::tirtle_client
-{
-    tirtle_client_impl(const std::string & dev)
-        : image_loaded(false)
+    bt_ostream(const std::string & dev)
     {
         bdaddr_t dest;
-        if (!bt_address(dest, dev)) {
-            tirtle::log::fatal("unable to find bluetooth device with name \"", dev, "\"");
+        if (valid_address(dev)) {
+            str2ba(dev.c_str(), &dest);
+        } else {
+            if (!bt_address(dest, dev)) {
+                tirtle::log::fatal("unable to find bluetooth device with name \"", dev, "\"");
+            }
         }
         socket = bt_socket(dest);
     }
 
-    void load_image(const std::vector<path_t> & paths) override
+    void flush() override {}
+
+    void write(const uint8_t *data, tirtle::streamsize_t n) override
     {
-        if (image_loaded) {
-            tirtle::log::fatal("duplicate image load");
-        }
+        tirtle::log::debug("sending ", n, " bytes to fd ", socket);
 
-        tirtle::log::info("loading image with ", paths.size(), " paths");
-
-        bt_send(socket, LOAD_IMAGE);
-        bt_send(socket, (length_t)paths.size());
-        for (const auto & path : paths) {
-            bt_send(socket, path);
+        size_t nbytes = 0;
+        while (nbytes < n) {
+            ssize_t status = ::write(socket, data + nbytes, n - nbytes);
+            if (status == -1) {
+                tirtle::log::pfatal("write");
+            }
+            tirtle::log::debug("sent ", status, "/", n, " bytes to fd ", socket);
+            nbytes += status;
         }
     }
 
-    void set_position(point_t loc, angle_t angle) override
+    ~bt_ostream()
     {
-        assert(angle < 360);
-        tirtle::log::debug("setting position(loc=", loc, ",angle=", angle, ")");
-        bt_send(socket, SET_POSITION);
-        bt_send(socket, loc);
-        bt_send(socket, angle);
-    }
-
-    ~tirtle_client_impl()
-    {
+        if (shutdown(socket, SHUT_WR) == -1) {
+            tirtle::log::perror("error shutting down socket ", socket);
+        }
         if (close(socket) == -1) {
             tirtle::log::perror("error closing socket ", socket);
         }
     }
 
 private:
-    bool    image_loaded;
-    int     socket;
+    int socket;
+};
+
+struct tirtle_client_impl
+    : tirtle::tirtle_client
+{
+    tirtle_client_impl(const std::string & dev)
+        : image_loaded(false)
+        , rpc(dev)
+    {}
+
+    void load_image(const tirtle::image & img) override
+    {
+        if (image_loaded) {
+            tirtle::log::fatal("duplicate image load");
+        }
+
+        tirtle::log::info("loading image with ", img.length(), " paths");
+
+        rpc << rpc::load_image(img);
+    }
+
+    void set_position(const tirtle::point & loc, tirtle::angle_t angle) override
+    {
+        assert(angle < 360);
+        tirtle::log::debug("setting position(loc=", loc, ",angle=", angle, ")");
+        rpc << rpc::set_position(loc, angle);
+    }
+
+private:
+    bool        image_loaded;
+    bt_ostream  rpc;
 };
 
 std::unique_ptr<tirtle::tirtle_client> tirtle::connect_tirtle(const std::string & dev)

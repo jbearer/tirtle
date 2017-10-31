@@ -14,12 +14,12 @@ namespace tirtle {
          * Send a set of paths to the Tirtle. The Tirtle will immediately begin tracing out the
          * given paths. This function must only be called once.
          */
-        virtual void load_image(const std::vector<path_t> & paths) = 0;
+        virtual void load_image(const image &) = 0;
 
         /**
          * Update the Tirtle with its current position and orientation.
          */
-        virtual void set_position(point_t loc, angle_t angle) = 0;
+        virtual void set_position(const point & loc, angle_t angle) = 0;
 
         virtual ~tirtle_client() {}
     };

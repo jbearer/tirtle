@@ -1,85 +1,86 @@
 #pragma once
 
-#include <iostream>
 #include <string>
 
 #include <errno.h>
 #include <string.h>
+
+#include "tirtle/stdio_stream.h"
 
 namespace tirtle {
     namespace log {
 
         inline void debug()
         {
-            std::cerr << "\n";
+            cerr << "\n";
         }
 
         template<class Arg, class... Args>
         inline void debug(const Arg & arg, const Args&... args)
         {
-            std::cerr << arg;
+            cerr << arg;
             debug(args...);
         }
 
         inline void info()
         {
-            std::cerr << "\n";
+            cerr << "\n";
         }
 
         template<class Arg, class... Args>
         inline void info(const Arg & arg, const Args&... args)
         {
-            std::cerr << arg;
+            cerr << arg;
             info(args...);
         }
 
         inline void error()
         {
-            std::cerr << "\n";
+            cerr << "\n";
         }
 
         template<class Arg, class... Args>
         inline void error(const Arg & arg, const Args&... args)
         {
-            std::cerr << arg;
+            cerr << arg;
             error(args...);
         }
 
         inline void perror()
         {
-            std::cerr << ": " << strerror(errno) << "\n";
+            cerr << ": " << strerror(errno) << "\n";
         }
 
         template<class Arg, class... Args>
         inline void perror(const Arg & arg, const Args&... args)
         {
-            std::cerr << arg;
+            cerr << arg;
             perror(args...);
         }
 
         [[noreturn]] inline void fatal()
         {
-            std::cerr << "\n";
+            cerr << "\n";
             std::abort();
         }
 
         template<class Arg, class... Args>
         [[noreturn]] inline void fatal(const Arg & arg, const Args&... args)
         {
-            std::cerr << arg;
+            cerr << arg;
             fatal(args...);
         }
 
         [[noreturn]] inline void pfatal()
         {
-            std::cerr << ": " << strerror(errno) << "\n";
+            cerr << ": " << strerror(errno) << "\n";
             std::abort();
         }
 
         template<class Arg, class... Args>
         [[noreturn]] inline void pfatal(const Arg & arg, const Args&... args)
         {
-            std::cerr << arg;
+            cerr << arg;
             pfatal(args...);
         }
 

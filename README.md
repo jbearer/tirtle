@@ -1,11 +1,48 @@
 # tIRLtle
 
-## Dependencies
+## Dependencies (and APT package names and versions)
 
-* `libbluetooth-dev`
-* `opencv-3.3.1`
-* `opencv_contrib-3.3.1`
-* Arduino SDK
+* Bluez (`libbluetooth-dev`)
+* OpenCV (`opencv-3.3.1` and `opencv_contrib-3.3.1`)
+* Arduino SDK (`arduino`)
+* Submodules (just run `git submodule init` to install)
+    - [avr-arduino-cmake](https://github.com/queezythegreat/arduino-cmake)
+    - [boost spirit](https://github.com/boostorg/spirit)
+
+## Installation
+
+First install the [dependencies](#dependencies-and-apt-package-names-and-versions). Then:
+
+* Build the client
+```bash
+cd client
+mkdir build
+cd build
+cmake -DCMAKE_EXTRA_MODULES_PATH=<path/to/cmake/contrib/modules> ..
+make
+```
+
+* Build the server
+```bash
+cd server
+mkdir build
+cd build
+cmake ..
+make
+```
+
+* To flash an executable onto the Arduino
+```bash
+cd server/build
+make <name>-flash
+```
+
+e.g. `make server-flash`
+
+* To open a serial port to the Arduino
+```bash
+sudo screen /dev/ttyACM0 -b 9600
+```
 
 ## Architecture
 
