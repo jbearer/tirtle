@@ -18,16 +18,16 @@ namespace tirtle {
         point get_position() const;
         angle_t get_orientation() const;
 
-        void forward(length_t);
-        void backward(length_t);
-        void right(angle_t);
-        void left(angle_t);
+        tirtle & forward(length_t);
+        tirtle & backward(length_t);
+        tirtle & right(angle_t);
+        tirtle & left(angle_t);
 
-        void move_to(const point &);
-        void turn_to(angle_t);
+        tirtle & move_to(const point &);
+        tirtle & turn_to(angle_t);
 
-        void pen_up();
-        void pen_down();
+        tirtle & pen_up();
+        tirtle & pen_down();
 
         void draw(tirtle_client &);
 

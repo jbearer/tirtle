@@ -99,7 +99,7 @@ namespace tirtle {
         delete impl;
     }
 
-    void tirtle::forward(length_t delta)
+    tirtle & tirtle::forward(length_t delta)
     {
         point dest = get_position();
         angle_t heading = get_orientation();
@@ -119,34 +119,41 @@ namespace tirtle {
         }
 
         move_to(dest);
+
+        return *this;
     }
 
-    void tirtle::backward(length_t delta)
+    tirtle & tirtle::backward(length_t delta)
     {
         right(180);
         forward(delta);
         right(180);
+        return *this;
     }
 
-    void tirtle::right(angle_t delta)
+    tirtle & tirtle::right(angle_t delta)
     {
         left(360 - (delta % 360));
+        return *this;
     }
 
-    void tirtle::left(angle_t delta)
+    tirtle & tirtle::left(angle_t delta)
     {
         delta = delta % 360;
         turn_to((delta + get_orientation()) % 360);
+        return *this;
     }
 
-    void tirtle::move_to(const point & loc)
+    tirtle & tirtle::move_to(const point & loc)
     {
         impl->move_to(loc);
+        return *this;
     }
 
-    void tirtle::turn_to(angle_t angle)
+    tirtle & tirtle::turn_to(angle_t angle)
     {
         impl->turn_to(angle);
+        return *this;
     }
 
     void tirtle::draw(tirtle_client & client)
@@ -154,14 +161,16 @@ namespace tirtle {
         impl->draw(client);
     }
 
-    void tirtle::pen_up()
+    tirtle & tirtle::pen_up()
     {
         impl->pen_up();
+        return *this;
     }
 
-    void tirtle::pen_down()
+    tirtle & tirtle::pen_down()
     {
         impl->pen_down();
+        return *this;
     }
 
     point tirtle::get_position() const

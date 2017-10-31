@@ -41,13 +41,14 @@ static void test1()
     tirtle::log::info("begin test1");
 
     tirtle::tirtle tirtle;
-    tirtle.forward(1);
-    tirtle.left(90);
-    tirtle.forward(1);
-    tirtle.left(90);
-    tirtle.forward(1);
-    tirtle.left(90);
-    tirtle.forward(1);
+    tirtle
+        .forward(1)
+        .left(90)
+        .forward(1)
+        .left(90)
+        .forward(1)
+        .left(90)
+        .forward(1);
 
     path path1(5);
     path1[0] = start_loc + point(0, 0);
@@ -67,16 +68,17 @@ static void test2()
     tirtle::log::info("begin test2");
 
     tirtle::tirtle tirtle;
-    tirtle.left(45);
-    tirtle.forward(7); // Hypotenuse of 5x5 right isoceles
+    tirtle
+        .left(45)
+        .forward(7) // Hypotenuse of 5x5 right isoceles
 
-    tirtle.pen_up();
-    tirtle.right(135);
-    tirtle.forward(5);
-    tirtle.right(90);
-    tirtle.pen_down();
+        .pen_up()
+        .right(135)
+        .forward(5)
+        .right(90)
+        .pen_down()
 
-    tirtle.forward(5);
+        .forward(5);
 
     path path1(2);
     path1[0] = start_loc + point(0, 0);
